@@ -2,8 +2,6 @@
 import { Router } from 'express';
 import multer from 'multer';
 import { protect } from '../middleware/auth.middleware.js';
-import { validate } from '../middleware/validate.middleware.js';
-import { candidateSchema } from '../utils/validators.js';
 import {
   createCandidate,
   getCandidates,
@@ -86,7 +84,7 @@ router.use(protect);
  *       400:
  *         description: Avatar file is required or validation error
  */
-router.post('/', upload.single('avatar'), validate(candidateSchema), createCandidate);
+router.post('/', upload.single('avatar'), createCandidate);
 
 /**
  * @swagger
@@ -168,7 +166,7 @@ router.get('/:candidateId', getCandidateById);
  *       404:
  *         description: Candidate not found
  */
-router.patch('/:candidateId', upload.single('avatar'), validate(candidateSchema.partial()), updateCandidate);
+router.patch('/:candidateId', upload.single('avatar'), updateCandidate);
 
 /**
  * @swagger

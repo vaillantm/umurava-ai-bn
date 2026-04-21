@@ -1,5 +1,7 @@
 import { Router } from 'express';
 import { protect } from '../middleware/auth.middleware.js';
+import { validate } from '../middleware/validate.middleware.js';
+import { screeningRunSchema } from '../utils/validators.js';
 import {
   runScreening,
   getLatestScreening,
@@ -79,7 +81,7 @@ const router = Router();
  *       500:
  *         description: Server error
  */
-router.post('/run', protect, runScreening);
+router.post('/run', protect, validate(screeningRunSchema), runScreening);
 
 /**
  * @swagger

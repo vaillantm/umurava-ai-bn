@@ -7,7 +7,14 @@ const userSchema = new mongoose.Schema({
   role: { type: String, enum: ['recruiter', 'admin'], default: 'recruiter' },
   companyName: { type: String, default: 'Umurava' },
   avatarUrl: String,
-  status: { type: String, default: 'active' }
+  status: { type: String, default: 'active' },
+  settings: {
+    primaryModel: { type: String, default: 'gemini-2.5-pro' },
+    batchOutput: { type: Boolean, default: true },
+    explainableStructuring: { type: Boolean, default: true },
+    biasDetection: { type: Boolean, default: true },
+    promptContext: { type: String, default: '' }
+  }
 }, { timestamps: true });
 
 export const User = mongoose.model('User', userSchema);

@@ -1,8 +1,12 @@
 import jwt from 'jsonwebtoken';
 import { Request, Response, NextFunction } from 'express';
+import type { UserRole } from '../types/index.js';
 
 export interface AuthRequest extends Request {
-  user?: any;
+  user?: {
+    id: string;
+    role: UserRole;
+  };
 }
 
 export const protect = async (req: AuthRequest, res: Response, next: NextFunction) => {
@@ -17,7 +21,10 @@ export const protect = async (req: AuthRequest, res: Response, next: NextFunctio
   }
 
   try {
-    const decoded = jwt.verify(token, process.env.JWT_SECRET!) as any;
+    const decoded = jwt.verify(token, process.env.JWT_SECRET!) as {
+      id: string;
+      role: UserRole;
+    };
     req.user = decoded;
     next();
   } catch (error) {

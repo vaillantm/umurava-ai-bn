@@ -7,6 +7,9 @@ import {
   getMe,
   logout,
   updateProfile,
+  getSettings,
+  updateSettings,
+  forgotPassword,
 } from "../controllers/auth.controller.js";
 import { protect } from "../middleware/auth.middleware.js";
 
@@ -102,7 +105,7 @@ router.post("/logout", protect, logout);
  * @swagger
  * /api/auth/profile:
  *   patch:
- *     summary: Update user profile (Avatar must be uploaded as file)
+ *     summary: Update user profile (avatar upload is optional)
  *     tags: [Auth]
  *     security: [{ bearerAuth: [] }]
  *     consumes:
@@ -118,11 +121,16 @@ router.post("/logout", protect, logout);
  *               avatar:
  *                 type: string
  *                 format: binary
- *                 description: "Profile picture (required - will be saved on Cloudinary)"
+ *                 description: "Profile picture (optional - saved on Cloudinary if provided)"
  *     responses:
  *       200: { description: "Profile updated successfully" }
  *       400: { description: "Avatar file is required" }
  */
 router.patch("/profile", protect, upload.single("avatar"), updateProfile);
+
+router.get("/settings", protect, getSettings);
+router.patch("/settings", protect, updateSettings);
+
+router.post("/forgot-password", forgotPassword);
 
 export default router;

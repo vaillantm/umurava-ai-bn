@@ -1,5 +1,7 @@
 import { Router } from 'express';
 import { protect } from '../middleware/auth.middleware.js';
+import { validate } from '../middleware/validate.middleware.js';
+import { jobCreateSchema, jobUpdateSchema } from '../utils/validators.js';
 import {
   createJob,
   getJobs,
@@ -53,7 +55,7 @@ const router = Router();
  *                 example: 2500000
  *               jobType:
  *                 type: string
- *                 enum: [full-time, part-time, contract, internship]
+ *                 enum: [full-time, part-time, contract, internship, freelance]
  *                 example: "full-time"
  *               experienceLevel:
  *                 type: string
@@ -68,7 +70,7 @@ const router = Router();
  *       400:
  *         description: Bad request
  */
-router.post('/', protect, createJob);
+router.post('/', protect, validate(jobCreateSchema), createJob);
 
 /**
  * @swagger
@@ -154,7 +156,7 @@ router.get('/:jobId', protect, getJobById);
  *                 type: number
  *               jobType:
  *                 type: string
- *                 enum: [full-time, part-time, contract, internship]
+ *                 enum: [full-time, part-time, contract, internship, freelance]
  *     responses:
  *       200:
  *         description: Job updated successfully
@@ -167,7 +169,7 @@ router.get('/:jobId', protect, getJobById);
  *       400:
  *         description: Bad request
  */
-router.patch('/:jobId', protect, updateJob);
+router.patch('/:jobId', protect, validate(jobUpdateSchema), updateJob);
 
 /**
  * @swagger

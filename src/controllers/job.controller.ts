@@ -32,12 +32,21 @@ export const getJobById = async (req: AuthRequest, res: Response) => {
 
 export const updateJob = async (req: AuthRequest, res: Response) => {
   try {
-    const job = await Job.findOneAndUpdate(
-      { _id: req.params.jobId, createdBy: req.user?.id },
-      req.body,
-      { new: true }
-    );
+    const job = await Job.findOne({ _id: req.params.jobId, createdBy: req.user?.id });
     if (!job) return res.status(404).json({ message: 'Job not found' });
+
+    const updateData: Record<string, unknown> = { ...req.body };
+
+    if (req.body.aiWeights) {
+      updateData.aiWeights = {
+        ...(job.aiWeights || {}),
+        ...req.body.aiWeights,
+      };
+    }
+
+    job.set(updateData);
+    await job.save();
+
     res.json(job);
   } catch (error: any) {
     res.status(400).json({ message: error.message });
