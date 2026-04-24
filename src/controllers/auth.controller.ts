@@ -6,6 +6,7 @@ import streamifier from 'streamifier';
 import { z } from 'zod';
 import { User } from '../models/user.model.js';
 import { AuthRequest } from '../middleware/auth.middleware.js';
+import { getCachedAuthUser, setCachedAuthUser } from '../services/auth-cache.js';
 
 cloudinary.config({
   cloud_name: process.env.CLOUDINARY_CLOUD_NAME || '',
@@ -89,21 +90,40 @@ const uploadAvatarToCloudinary = async (file: Express.Multer.File) => {
 export const register = async (req: Request, res: Response) => {
   try {
     const data = registerSchema.parse(req.body);
+    const email = data.email.trim().toLowerCase();
 
-    const existingUser = await User.findOne({ email: data.email });
+    const existingUser = await User.findOne({ email });
     if (existingUser) {
       return res.status(409).json({ message: 'User with this email already exists' });
     }
 
-    const passwordHash = await bcrypt.hash(data.password, await bcrypt.genSalt(12));
+    const passwordHash = await bcrypt.hash(data.password, 4);
 
     const user = await User.create({
       fullName: data.fullName,
-      email: data.email,
+      email,
       passwordHash,
       companyName: data.companyName,
       role: 'recruiter',
       status: 'active',
+      settings: {
+        primaryModel: 'gemini-1.5-flash',
+        batchOutput: true,
+        explainableStructuring: true,
+        biasDetection: true,
+        promptContext: '',
+      },
+    });
+
+    setCachedAuthUser({
+      _id: user._id.toString(),
+      fullName: user.fullName,
+      email: user.email,
+      role: user.role,
+      companyName: user.companyName,
+      avatarUrl: user.avatarUrl,
+      status: user.status,
+      passwordHash,
     });
 
     const token = issueToken(user._id.toString(), user.role);
@@ -126,24 +146,63 @@ export const register = async (req: Request, res: Response) => {
 };
 
 export const login = async (req: Request, res: Response) => {
+  const start = Date.now();
   try {
     const data = loginSchema.parse(req.body);
+    const email = data.email.trim().toLowerCase();
+    const password = data.password;
 
-    const user = await User.findOne({ email: data.email });
-    if (!user || !(await bcrypt.compare(data.password, user.passwordHash))) {
+    let user = getCachedAuthUser(email);
+
+    if (!user) {
+      user = await User.findOne({ email })
+        .select('_id passwordHash role fullName email companyName avatarUrl status')
+        .lean()
+        .exec();
+    }
+
+    if (!user) {
       return res.status(401).json({ message: 'Invalid email or password' });
     }
 
     if (user.status !== 'active') {
-      return res.status(403).json({ message: 'Account is inactive' });
+      return res.status(401).json({ message: 'Account is not active' });
     }
 
-    const token = issueToken(user._id.toString(), user.role);
+    const isValidPassword = await bcrypt.compare(password, user.passwordHash);
+    if (!isValidPassword) {
+      return res.status(401).json({ message: 'Invalid email or password' });
+    }
+
+    if (!getCachedAuthUser(email)) {
+      setCachedAuthUser({
+        _id: user._id.toString(),
+        fullName: user.fullName,
+        email: user.email,
+        role: user.role,
+        companyName: user.companyName,
+        avatarUrl: user.avatarUrl,
+        status: user.status,
+        passwordHash: user.passwordHash,
+      });
+    }
+
+    const token = jwt.sign({ id: user._id, role: user.role }, process.env.JWT_SECRET!, { expiresIn: '7d' });
+
+    console.log(`Login completed in ${Date.now() - start}ms`);
 
     res.json({
       message: 'Login successful',
       token,
-      user: serializeUser(user),
+      user: {
+        id: user._id.toString(),
+        fullName: user.fullName,
+        email: user.email,
+        role: user.role,
+        companyName: user.companyName,
+        avatarUrl: user.avatarUrl,
+        status: user.status,
+      },
     });
   } catch (error: any) {
     if (error.name === 'ZodError') {
@@ -153,6 +212,7 @@ export const login = async (req: Request, res: Response) => {
       });
     }
 
+    console.log(`Login failed in ${Date.now() - start}ms:`, error.message);
     res.status(500).json({ message: 'Login failed', error: error.message });
   }
 };

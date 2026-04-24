@@ -239,6 +239,9 @@ export const jobUpdateSchema = jobUpdateBodySchema;
 
 export const screeningRunSchema = z.object({
   jobId: z.string().min(1),
-  candidateIds: z.array(z.string().min(1)).min(1, 'At least one candidate is required'),
+  candidateIds: z.array(z.string().min(1)).min(1, 'At least one candidate is required').optional(),
   shortlistSize: z.coerce.number().int().positive().optional(),
+}).refine((data) => Boolean(data.candidateIds?.length) || Boolean(data.jobId), {
+  message: 'Provide jobId and optionally candidateIds, or jobId alone to screen all job applications.',
+  path: ['jobId'],
 });

@@ -1,15 +1,18 @@
 import { Router } from 'express';
+import multer from 'multer';
 import { protect } from '../middleware/auth.middleware.js';
 import { validate } from '../middleware/validate.middleware.js';
 import { screeningRunSchema } from '../utils/validators.js';
 import {
   runScreening,
+  runBulkScreening,
   getLatestScreening,
   getScreeningById,
   exportScreening
 } from '../controllers/screening.controller.js';
 
 const router = Router();
+const upload = multer({ storage: multer.memoryStorage() });
 
 /**
  * @swagger
@@ -32,9 +35,6 @@ const router = Router();
  *         application/json:
  *           schema:
  *             type: object
- *             required:
- *               - jobId
- *               - candidateIds
  *             properties:
  *               jobId:
  *                 type: string
@@ -44,7 +44,7 @@ const router = Router();
  *                 type: array
  *                 items:
  *                   type: string
- *                 description: Array of candidate IDs to screen
+ *                 description: Optional array of candidate IDs to screen. If omitted, all applications for the job are screened.
  *                 example: ["67f8a1b2c3d4e5f6g7h8i9j1", "67f8a1b2c3d4e5f6g7h8i9j2"]
  *               shortlistSize:
  *                 type: number
@@ -74,6 +74,33 @@ const router = Router();
  *                   type: array
  *                   items:
  *                     $ref: '#/components/schemas/ScreeningResult'
+ *             examples:
+ *               sample:
+ *                 value:
+ *                   jobId: 66f1a1b2c3d4e5f6a7b8c9d0
+ *                   totalCandidates: 14
+ *                   shortlistedCount: 10
+ *                   averageScore: 83.4
+ *                   usedFallback: false
+ *                   summary: Top candidates were shortlisted based on skill overlap and experience.
+ *                   results:
+ *                     - candidateId: 66f1a1b2c3d4e5f6a7b8c9e1
+ *                       rank: 1
+ *                       score: 92
+ *                       scoreBreakdown:
+ *                         skills: 38
+ *                         experience: 28
+ *                         education: 12
+ *                         projects: 9
+ *                         certifications: 5
+ *                       strengths: [Strong Node.js, Good API design]
+ *                       gaps: [Limited cloud experience]
+ *                       reasoning: High skill match and strong delivery history.
+ *                       decision: shortlisted
+ *                   incompleteCandidates:
+ *                     - candidateId: 66f1a1b2c3d4e5f6a7b8c9e2
+ *                       reason: Missing required personal information or resume fields.
+ *                   screeningId: 66f1a1b2c3d4e5f6a7b8c9f9
  *       400:
  *         description: Invalid input data
  *       404:
@@ -82,6 +109,65 @@ const router = Router();
  *         description: Server error
  */
 router.post('/run', protect, validate(screeningRunSchema), runScreening);
+
+/**
+ * @swagger
+ * /api/screenings/bulk-run:
+ *   post:
+ *     summary: Upload multiple PDFs and run AI screening immediately for a job
+ *     tags: [Screenings]
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         multipart/form-data:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - jobId
+ *               - files
+ *             properties:
+ *               jobId:
+ *                 type: string
+ *               shortlistSize:
+ *                 type: number
+ *                 default: 20
+ *               files:
+ *                 type: array
+ *                 items:
+ *                   type: string
+ *                   format: binary
+ *     responses:
+ *       201:
+ *         description: Bulk upload and screening completed
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/BulkPdfResponse'
+ *             examples:
+ *               sample:
+ *                 value:
+ *                   message: Bulk upload and screening completed
+ *                   jobId: 66f1a1b2c3d4e5f6a7b8c9d0
+ *                   jobTitle: Senior Backend Engineer
+ *                   uploadCount: 5
+ *                   applicationsCreated:
+ *                     - candidateId: 66f1a1b2c3d4e5f6a7b8c9e1
+ *                       applicationId: 66f1a1b2c3d4e5f6a7b8c9fa
+ *                       fileName: john-doe.pdf
+ *                       resumeUrl: https://res.cloudinary.com/demo/raw/upload/v1/resume.pdf
+ *                   applicationRecords:
+ *                     - id: 66f1a1b2c3d4e5f6a7b8c9fa
+ *                       jobId: 66f1a1b2c3d4e5f6a7b8c9d0
+ *                       candidateId: 66f1a1b2c3d4e5f6a7b8c9e1
+ *                       status: submitted
+ *                       cvUrl: https://res.cloudinary.com/demo/raw/upload/v1/resume.pdf
+ *                   shortlistedCount: 3
+ *                   totalCandidates: 5
+ *                   screeningId: 66f1a1b2c3d4e5f6a7b8c9f9
+ */
+router.post('/bulk-run', protect, upload.array('files', 50), runBulkScreening);
 
 /**
  * @swagger
@@ -105,6 +191,17 @@ router.post('/run', protect, validate(screeningRunSchema), runScreening);
  *           application/json:
  *             schema:
  *               $ref: '#/components/schemas/Screening'
+ *             examples:
+ *               sample:
+ *                 value:
+ *                   id: 66f1a1b2c3d4e5f6a7b8c9f9
+ *                   jobId: 66f1a1b2c3d4e5f6a7b8c9d0
+ *                   results: []
+ *                   incompleteCandidates: []
+ *                   summary: Latest screening result.
+ *                   totalCandidates: 14
+ *                   shortlistedCount: 10
+ *                   averageScore: 83.4
  *       404:
  *         description: No screening found for this job
  *       500:
@@ -134,6 +231,17 @@ router.get('/jobs/:jobId/latest', protect, getLatestScreening);
  *           application/json:
  *             schema:
  *               $ref: '#/components/schemas/Screening'
+ *             examples:
+ *               sample:
+ *                 value:
+ *                   id: 66f1a1b2c3d4e5f6a7b8c9f9
+ *                   jobId: 66f1a1b2c3d4e5f6a7b8c9d0
+ *                   results: []
+ *                   incompleteCandidates: []
+ *                   summary: Screening details.
+ *                   totalCandidates: 14
+ *                   shortlistedCount: 10
+ *                   averageScore: 83.4
  *       404:
  *         description: Screening not found
  *       500:
@@ -177,6 +285,27 @@ router.get('/:screeningId', protect, getScreeningById);
  *                 generatedAt:
  *                   type: string
  *                   format: date-time
+ *             examples:
+ *               sample:
+ *                 value:
+ *                   jobId: 66f1a1b2c3d4e5f6a7b8c9d0
+ *                   summary: Exported shortlist for review.
+ *                   shortlisted:
+ *                     - candidateId: 66f1a1b2c3d4e5f6a7b8c9e1
+ *                       rank: 1
+ *                       score: 92
+ *                       scoreBreakdown:
+ *                         skills: 38
+ *                         experience: 28
+ *                         education: 12
+ *                         projects: 9
+ *                         certifications: 5
+ *                       strengths: [Strong Node.js]
+ *                       gaps: [Limited cloud experience]
+ *                       reasoning: High skill match.
+ *                       decision: shortlisted
+ *                   incomplete: []
+ *                   generatedAt: 2026-04-23T00:00:00.000Z
  *       404:
  *         description: Screening not found
  *       500:

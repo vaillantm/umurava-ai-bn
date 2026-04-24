@@ -84,6 +84,7 @@ const socialLinksSchema = new mongoose.Schema(
 
 const candidateSchema = new mongoose.Schema(
   {
+    resumeText: { type: String },
     source: {
       type: String,
       required: true,
@@ -91,6 +92,7 @@ const candidateSchema = new mongoose.Schema(
       default: 'manual',
     },
     sourceFileName: String,
+    resumeUrl: String,
     avatar: {
       url: String,
       publicId: String,
@@ -111,6 +113,22 @@ const candidateSchema = new mongoose.Schema(
     projects: { type: [projectSchema], default: [] },
     availability: availabilitySchema,
     socialLinks: socialLinksSchema,
+    incompleteReason: String,
+    reasoning: String,
+    score: Number,
+    scoreBreakdown: {
+      skills: Number,
+      experience: Number,
+      education: Number,
+      projects: Number,
+      certifications: Number,
+    },
+    strengths: [{ type: String }],
+    gaps: [{ type: String }],
+    workflowStatus: String,
+    decision: String,
+    rank: Number,
+    shortlistLabel: String,
   },
   { timestamps: true },
 );

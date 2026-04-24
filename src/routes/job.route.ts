@@ -32,41 +32,60 @@ const router = Router();
  *       content:
  *         application/json:
  *           schema:
- *             type: object
- *             required:
- *               - title
- *               - description
- *               - company
- *             properties:
- *               title:
- *                 type: string
- *                 example: "Senior Software Engineer"
- *               description:
- *                 type: string
- *                 example: "We are looking for a talented backend developer..."
- *               company:
- *                 type: string
- *                 example: "TechVision Inc."
- *               location:
- *                 type: string
- *                 example: "Kigali, Rwanda"
- *               salary:
- *                 type: number
- *                 example: 2500000
- *               jobType:
- *                 type: string
- *                 enum: [full-time, part-time, contract, internship, freelance]
- *                 example: "full-time"
- *               experienceLevel:
- *                 type: string
- *                 example: "Mid-Senior Level"
+ *             $ref: '#/components/schemas/Job'
+ *           examples:
+ *             sample:
+ *               value:
+ *                 title: Senior Backend Engineer
+ *                 company: Umurava
+ *                 department: Engineering
+ *                 location: Kigali, Rwanda
+ *                 salary: 2500000
+ *                 jobType: full-time
+ *                 employmentType: On-site
+ *                 experienceLevel: Mid-Senior
+ *                 shortlistSize: 10
+ *                 description: Build and maintain backend services.
+ *                 requiredSkills: [Node.js, TypeScript, MongoDB]
+ *                 idealCandidateProfile: Strong API and systems experience.
+ *                 aiWeights:
+ *                   skills: 40
+ *                   experience: 30
+ *                   education: 15
+ *                   projects: 10
+ *                   certifications: 5
+ *                 status: active
  *     responses:
  *       201:
  *         description: Job created successfully
  *         content:
  *           application/json:
  *             schema:
- *               $ref: '#/components/schemas/Job'
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                 job:
+ *                   $ref: '#/components/schemas/Job'
+ *             examples:
+ *               sample:
+ *                 value:
+ *                   message: Job created successfully
+ *                   job:
+ *                     title: Senior Backend Engineer
+ *                     company: Umurava
+ *                     department: Engineering
+ *                     location: Kigali, Rwanda
+ *                     shortlistSize: 10
+ *                     description: Build and maintain backend services.
+ *                     requiredSkills: [Node.js, TypeScript, MongoDB]
+ *                     aiWeights:
+ *                       skills: 40
+ *                       experience: 30
+ *                       education: 15
+ *                       projects: 10
+ *                       certifications: 5
+ *                     status: active
  *       400:
  *         description: Bad request
  */
@@ -89,6 +108,23 @@ router.post('/', protect, validate(jobCreateSchema), createJob);
  *               type: array
  *               items:
  *                 $ref: '#/components/schemas/Job'
+ *             examples:
+ *               sample:
+ *                 value:
+ *                   - title: Senior Backend Engineer
+ *                     company: Umurava
+ *                     department: Engineering
+ *                     location: Kigali, Rwanda
+ *                     shortlistSize: 10
+ *                     description: Build and maintain backend services.
+ *                     requiredSkills: [Node.js, TypeScript, MongoDB]
+ *                     aiWeights:
+ *                       skills: 40
+ *                       experience: 30
+ *                       education: 15
+ *                       projects: 10
+ *                       certifications: 5
+ *                     status: active
  *       500:
  *         description: Server error
  */
@@ -163,7 +199,12 @@ router.get('/:jobId', protect, getJobById);
  *         content:
  *           application/json:
  *             schema:
- *               $ref: '#/components/schemas/Job'
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                 job:
+ *                   $ref: '#/components/schemas/Job'
  *       404:
  *         description: Job not found
  *       400:

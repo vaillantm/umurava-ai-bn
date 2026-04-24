@@ -70,7 +70,21 @@ router.post("/register", register);
  *               email: { type: string, format: email, example: "alice@umurava.com" }
  *               password: { type: string, format: password, example: "StrongPass123!" }
  *     responses:
- *       200: { description: "Login successful" }
+ *       200:
+ *         description: Login successful
+ *         content:
+ *           application/json:
+ *             example:
+ *               message: "Login successful"
+ *               token: "eyJhbGciOiJIUzI1NiIs..."
+ *               user:
+ *                 id: "66b1f0a8c8f1a9d3a2f7c001"
+ *                 fullName: "Alice Uwimana"
+ *                 email: "alice@umurava.com"
+ *                 role: "recruiter"
+ *                 companyName: "Umurava"
+ *                 avatarUrl: "https://res.cloudinary.com/demo/image/upload/v1/avatar.png"
+ *                 status: "active"
  *       401: { description: "Invalid credentials" }
  */
 router.post("/login", login);

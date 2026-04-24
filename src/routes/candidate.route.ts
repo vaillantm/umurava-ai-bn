@@ -40,21 +40,19 @@ router.use(protect);
  *       - multipart/form-data
  *     description: |
  *       Create a candidate manually. 
- *       You MUST upload an avatar image file.
+ *       Avatar is optional.
  *       Personal info can be sent as flat fields or nested under "personalInfo".
  *     requestBody:
- *       required: true
+ *       required: false
  *       content:
  *         multipart/form-data:
  *           schema:
  *             type: object
- *             required:
- *               - avatar
  *             properties:
  *               avatar:
  *                 type: string
  *                 format: binary
- *                 description: Candidate profile photo (REQUIRED - will be saved on Cloudinary)
+ *                 description: Candidate profile photo (optional - will be saved on Cloudinary if provided)
  *               firstName:
  *                 type: string
  *                 example: "Kalisa"
@@ -78,9 +76,45 @@ router.use(protect);
  *                 items:
  *                   type: object
  *                 example: [{"name": "Node.js", "level": "Expert", "yearsOfExperience": 5}]
+ *             examples:
+ *               sample:
+ *                 value:
+ *                   firstName: John
+ *                   lastName: Doe
+ *                   email: john.doe@email.com
+ *                   headline: Full-Stack Engineer
+ *                   bio: Backend-focused engineer with 5 years experience.
+ *                   location: Kigali, Rwanda
+ *                   skills: [{"name":"Node.js","level":"Expert","yearsOfExperience":5}]
  *     responses:
  *       201:
  *         description: Candidate created successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                 candidate:
+ *                   $ref: '#/components/schemas/Candidate'
+ *             examples:
+ *               sample:
+ *                 value:
+ *                   message: Candidate created successfully
+ *                   candidate:
+ *                     source: manual
+ *                     personalInfo:
+ *                       firstName: John
+ *                       lastName: Doe
+ *                       email: john.doe@email.com
+ *                       headline: Full-Stack Engineer
+ *                       bio: Backend-focused engineer with 5 years experience.
+ *                       location: Kigali, Rwanda
+ *                     skills:
+ *                       - name: Node.js
+ *                         level: Expert
+ *                         yearsOfExperience: 5
  *       400:
  *         description: Avatar file is required or validation error
  */
@@ -97,6 +131,23 @@ router.post('/', upload.single('avatar'), createCandidate);
  *     responses:
  *       200:
  *         description: List of all candidates
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 $ref: '#/components/schemas/Candidate'
+ *             examples:
+ *               sample:
+ *                 value:
+ *                   - source: pdf
+ *                     sourceFileName: john-doe-resume.pdf
+ *                     personalInfo:
+ *                       firstName: John
+ *                       lastName: Doe
+ *                       email: john.doe@email.com
+ *                       headline: Full-Stack Engineer
+ *                       location: Kigali, Rwanda
  */
 router.get('/', getCandidates);
 
@@ -117,6 +168,21 @@ router.get('/', getCandidates);
  *     responses:
  *       200:
  *         description: Candidate details
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Candidate'
+ *             examples:
+ *               sample:
+ *                 value:
+ *                   source: pdf
+ *                   sourceFileName: john-doe-resume.pdf
+ *                   personalInfo:
+ *                     firstName: John
+ *                     lastName: Doe
+ *                     email: john.doe@email.com
+ *                     headline: Full-Stack Engineer
+ *                     location: Kigali, Rwanda
  *       404:
  *         description: Candidate not found
  */
@@ -163,6 +229,27 @@ router.get('/:candidateId', getCandidateById);
  *     responses:
  *       200:
  *         description: Candidate updated successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                 candidate:
+ *                   $ref: '#/components/schemas/Candidate'
+ *             examples:
+ *               sample:
+ *                 value:
+ *                   message: Candidate updated successfully
+ *                   candidate:
+ *                     source: manual
+ *                     personalInfo:
+ *                       firstName: John
+ *                       lastName: Doe
+ *                       email: john.doe@email.com
+ *                       headline: Full-Stack Engineer
+ *                       location: Kigali, Rwanda
  *       404:
  *         description: Candidate not found
  */
@@ -185,6 +272,14 @@ router.patch('/:candidateId', upload.single('avatar'), updateCandidate);
  *     responses:
  *       200:
  *         description: Candidate deleted successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ApiMessage'
+ *             examples:
+ *               sample:
+ *                 value:
+ *                   message: Candidate deleted
  */
 router.delete('/:candidateId', deleteCandidate);
 
@@ -204,9 +299,44 @@ router.delete('/:candidateId', deleteCandidate);
  *             type: array
  *             items:
  *               type: object
+ *           examples:
+ *             sample:
+ *               value:
+ *                 - source: manual
+ *                   personalInfo:
+ *                     firstName: John
+ *                     lastName: Doe
+ *                     email: john.doe@email.com
+ *                     headline: Full-Stack Engineer
+ *                     location: Kigali, Rwanda
+ *                 - source: json
+ *                   personalInfo:
+ *                     firstName: Jane
+ *                     lastName: Smith
+ *                     email: jane.smith@email.com
+ *                     headline: Backend Engineer
+ *                     location: Kigali, Rwanda
  *     responses:
  *       201:
  *         description: Bulk candidates created
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                 count:
+ *                   type: number
+ *                 candidates:
+ *                   type: array
+ *                   items:
+ *                     $ref: '#/components/schemas/Candidate'
+ *             examples:
+ *               sample:
+ *                 value:
+ *                   message: 2 candidates created
+ *                   count: 2
  */
 router.post('/bulk', bulkCreateCandidates);
 

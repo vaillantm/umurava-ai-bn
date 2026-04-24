@@ -29,6 +29,15 @@ const jobSchema = new mongoose.Schema(
     requiredSkills: [{ type: String }],
     idealCandidateProfile: { type: String },
     aiWeights: { type: aiWeightsSchema, default: () => ({}) },
+    shortlistedCandidates: [{
+      candidateId: { type: mongoose.Schema.Types.ObjectId, ref: 'Candidate' },
+      applicationId: { type: mongoose.Schema.Types.ObjectId, ref: 'Application' },
+      score: Number,
+      rank: Number,
+      decision: String,
+      reasoning: String,
+      shortlistedAt: { type: Date, default: Date.now },
+    }],
     status: {
       type: String,
       enum: ['draft', 'active', 'closed'],

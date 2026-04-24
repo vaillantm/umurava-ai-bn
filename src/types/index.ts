@@ -107,6 +107,8 @@ export interface CandidateRecord {
   id?: string;
   source: 'manual' | 'json' | 'csv' | 'pdf' | 'bulk';
   sourceFileName?: string;
+  resumeText?: string;
+  resumeUrl?: string;
   avatar?: CandidateAvatar;
   personalInfo: PersonalInfo;
   skills?: Skill[];
@@ -119,6 +121,16 @@ export interface CandidateRecord {
   socialLinks?: SocialLinks;
   createdAt?: string;
   updatedAt?: string;
+  score?: number;
+  scoreBreakdown?: Partial<JobWeights>;
+  reasoning?: string;
+  strengths?: string[];
+  gaps?: string[];
+  workflowStatus?: string;
+  decision?: string;
+  rank?: number;
+  shortlistLabel?: string;
+  incompleteReason?: string;
 }
 
 export type CandidateSchema = CandidateRecord;
@@ -151,6 +163,35 @@ export interface JobRecord {
   aiWeights?: JobWeights;
   status?: JobStatus;
   createdBy?: string;
+  createdAt?: string;
+  updatedAt?: string;
+  shortlistedCandidates?: Array<{
+    candidateId: string;
+    applicationId?: string;
+    score?: number;
+    rank?: number;
+    decision?: string;
+    reasoning?: string;
+    shortlistedAt?: string;
+  }>;
+}
+
+export interface ApplicationRecord {
+  id?: string;
+  jobId: string;
+  candidateId: string;
+  cvUrl: string;
+  cvText?: string;
+  sourceFileName?: string;
+  status: 'submitted' | 'screened' | 'shortlisted' | 'manual_review';
+  screeningId?: string;
+  score?: number;
+  decision?: string;
+  reasoning?: string;
+  workflowStatus?: string;
+  shortlistLabel?: string;
+  appliedAt?: string;
+  screenedAt?: string;
   createdAt?: string;
   updatedAt?: string;
 }

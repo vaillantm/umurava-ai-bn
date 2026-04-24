@@ -2,8 +2,8 @@ import mongoose from 'mongoose';
 
 const userSchema = new mongoose.Schema({
   fullName: { type: String, required: true },
-  email: { type: String, required: true, unique: true },
-  passwordHash: { type: String, required: true },
+  email: { type: String, required: true, unique: true, index: true },
+  passwordHash: { type: String, required: true, select: false },
   role: { type: String, enum: ['recruiter', 'admin'], default: 'recruiter' },
   companyName: { type: String, default: 'Umurava' },
   avatarUrl: String,
@@ -16,5 +16,7 @@ const userSchema = new mongoose.Schema({
     promptContext: { type: String, default: '' }
   }
 }, { timestamps: true });
+
+userSchema.index({ email: 1, status: 1 });
 
 export const User = mongoose.model('User', userSchema);
