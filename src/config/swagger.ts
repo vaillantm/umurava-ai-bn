@@ -16,13 +16,9 @@ const options = {
     },
     servers: [
       {
-        url: 'http://localhost:4000',
-        description: 'Local Development Server',
+        url: process.env.API_URL || 'http://localhost:4000',
+        description: 'API Server',
       },
-      {
-        url: 'https://your-deployed-url.onrender.com', // Change later when deployed
-        description: 'Production Server',
-      }
     ],
     components: {
       securitySchemes: {
