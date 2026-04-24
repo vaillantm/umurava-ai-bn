@@ -9,7 +9,7 @@ import rateLimit from 'express-rate-limit';
 
 import connectDB from './config/db.js';
 
-import { swaggerUi, specs } from '../src/config/swagger.js';
+import { swaggerUi, specs } from './config/swagger.js';
 import authRoutes from './routes/auth.route.js';
 import jobRoutes from './routes/job.route.js';
 import candidateRoutes from './routes/candidate.route.js';
