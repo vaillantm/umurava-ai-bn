@@ -1,0 +1,90 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Umurava AI Status</title>
+    <link rel="stylesheet" href="/public/status.css" />
+  </head>
+  <body data-state="loading">
+    <div class="page-glow page-glow-left"></div>
+    <div class="page-glow page-glow-right"></div>
+
+    <main class="status-shell">
+      <section class="status-card">
+        <div class="status-brand">
+          <span class="brand-mark"></span>
+          <span>Umurava AI</span>
+        </div>
+
+        <div class="status-chip" id="status-chip">Please wait</div>
+
+        <div class="connector-stage" aria-hidden="true">
+          <div class="cable cable-left"></div>
+          <div class="plug plug-left">
+            <span></span>
+            <span></span>
+          </div>
+
+          <div class="signal-core">
+            <div class="signal-ring"></div>
+            <div class="signal-dot"></div>
+            <div class="signal-orbit">
+              <span class="bubble bubble-1"></span>
+              <span class="bubble bubble-2"></span>
+              <span class="bubble bubble-3"></span>
+              <span class="bubble bubble-4"></span>
+              <span class="bubble bubble-5"></span>
+              <span class="bubble bubble-6"></span>
+              <span class="bubble bubble-7"></span>
+              <span class="bubble bubble-8"></span>
+            </div>
+            <div class="signal-fragment signal-fragment-left"></div>
+            <div class="signal-fragment signal-fragment-right"></div>
+            <div class="signal-bridge"></div>
+          </div>
+
+          <div class="plug plug-right">
+            <span></span>
+            <span></span>
+          </div>
+          <div class="cable cable-right"></div>
+        </div>
+
+        <div class="status-copy">
+          <p class="eyebrow" id="status-eyebrow">Preparing connection</p>
+          <h1 id="status-title">Please wait while we set things up.</h1>
+          <p class="status-text" id="status-text">
+            Buttons respond immediately with this loading screen, even when the
+            server takes a little longer to finish the request.
+          </p>
+        </div>
+
+        <div class="progress-panel">
+          <div class="progress-track">
+            <span class="progress-fill"></span>
+          </div>
+          <p class="progress-note" id="progress-note">
+            Checking connection health and preparing your next step.
+          </p>
+        </div>
+
+        <div class="status-actions">
+          <button type="button" class="primary-action" id="retry-button">
+            Retry connection
+          </button>
+          <button type="button" class="secondary-action" id="simulate-button">
+            Test slow action
+          </button>
+        </div>
+
+        <p class="status-helper" id="status-helper" aria-live="polite">
+          Fast feedback is enabled. You should see a waiting state as soon as
+          you press a button.
+        </p>
+      </section>
+    </main>
+
+    <script src="/public/status.js"></script>
+  </body>
+</html>
