@@ -12,14 +12,40 @@ import { candidateCreateSchema } from '../utils/validators.js';
 export const uploadJson = async (req: Request, res: Response) => {
   try {
     const jobId = (req.body?.jobId || req.query?.jobId) as string | undefined;
-    if (!req.file) return res.status(400).json({ message: 'No file uploaded' });
     if (!jobId) return res.status(400).json({ message: 'jobId is required' });
 
     const job = await Job.findById(jobId);
     if (!job) return res.status(404).json({ message: 'Job not found' });
 
-    const data = JSON.parse(req.file.buffer.toString());
-    const candidates = Array.isArray(data) ? data : [data];
+    const rawCandidates =
+      req.body?.candidates ??
+      req.body?.candidate ??
+      req.body?.data ??
+      req.body;
+
+    let candidates: unknown[] = [];
+
+    if (req.file) {
+      const data = JSON.parse(req.file.buffer.toString());
+      candidates = Array.isArray(data) ? data : [data];
+    } else if (typeof rawCandidates === 'string') {
+      const parsed = JSON.parse(rawCandidates);
+      candidates = Array.isArray(parsed) ? parsed : [parsed];
+    } else if (Array.isArray(rawCandidates)) {
+      candidates = rawCandidates;
+    } else if (rawCandidates && typeof rawCandidates === 'object') {
+      candidates = Array.isArray((rawCandidates as Record<string, unknown>).candidates)
+        ? (rawCandidates as Record<string, unknown>).candidates as unknown[]
+        : [rawCandidates];
+    }
+
+    if (candidates.length === 0) {
+      return res.status(400).json({
+        message: 'No candidate JSON found',
+        hint: 'Send a JSON file in multipart/form-data as `file`, or send `candidates` as a JSON string/object in multipart/form-data.',
+      });
+    }
+
     const applicationsCreated: any[] = [];
     const savedCandidates: any[] = [];
 
@@ -27,12 +53,12 @@ export const uploadJson = async (req: Request, res: Response) => {
       const validatedCandidate = candidateCreateSchema.parse({
         ...(candidate as Record<string, unknown>),
         source: 'json',
-        sourceFileName: req.file?.originalname,
+        sourceFileName: req.file?.originalname || 'inline-json',
       });
 
       const savedCandidate = await Candidate.findOneAndUpdate(
         { 'personalInfo.email': validatedCandidate.personalInfo.email },
-        { $set: validatedCandidate, $setOnInsert: { source: 'json' } },
+        { $set: validatedCandidate },
         { new: true, upsert: true, setDefaultsOnInsert: true },
       );
       if (!savedCandidate) {
@@ -47,9 +73,9 @@ export const uploadJson = async (req: Request, res: Response) => {
           $set: {
             jobId,
             candidateId: savedCandidate._id,
-            cvUrl: savedCandidate.resumeUrl || req.file.originalname,
+            cvUrl: savedCandidate.resumeUrl || req.file?.originalname || 'inline-json',
             cvText: savedCandidate.resumeText || JSON.stringify(validatedCandidate),
-            sourceFileName: req.file.originalname,
+            sourceFileName: req.file?.originalname || 'inline-json',
             status: 'submitted',
           },
           $setOnInsert: { appliedAt: new Date() },
@@ -133,7 +159,7 @@ export const uploadCsv = async (req: Request, res: Response) => {
     for (const candidatePayload of candidates) {
       const savedCandidate = await Candidate.findOneAndUpdate(
         { 'personalInfo.email': candidatePayload.personalInfo.email },
-        { $set: candidatePayload, $setOnInsert: { source: 'csv' } },
+        { $set: candidatePayload },
         { new: true, upsert: true, setDefaultsOnInsert: true },
       );
       if (!savedCandidate) {

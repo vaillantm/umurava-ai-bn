@@ -323,6 +323,19 @@ export const getLatestScreening = async (req: AuthRequest, res: Response) => {
   }
 };
 
+export const getLatestScreeningByQuery = async (req: AuthRequest, res: Response) => {
+  try {
+    const jobId = (req.query.jobId || req.params.jobId) as string | undefined;
+    if (!jobId) return res.status(400).json({ message: 'jobId is required' });
+
+    const screening = await Screening.findOne({ jobId }).sort({ createdAt: -1 }).populate('results.candidateId', 'personalInfo avatar');
+    if (!screening) return res.status(404).json({ message: 'No screening found for this job' });
+    res.json(screening);
+  } catch (error: any) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
 export const getScreeningById = async (req: AuthRequest, res: Response) => {
   try {
     const screening = await Screening.findById(req.params.screeningId).populate('results.candidateId', 'personalInfo avatar skills experience');

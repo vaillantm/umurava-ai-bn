@@ -1,6 +1,6 @@
 import { User } from '../models/user.model.js';
 
-type CachedAuthUser = {
+export type CachedAuthUser = {
   _id: string;
   fullName: string;
   email: string;

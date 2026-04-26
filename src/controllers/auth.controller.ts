@@ -6,7 +6,7 @@ import streamifier from 'streamifier';
 import { z } from 'zod';
 import { User } from '../models/user.model.js';
 import { AuthRequest } from '../middleware/auth.middleware.js';
-import { getCachedAuthUser, setCachedAuthUser } from '../services/auth-cache.js';
+import { getCachedAuthUser, setCachedAuthUser, type CachedAuthUser } from '../services/auth-cache.js';
 
 cloudinary.config({
   cloud_name: process.env.CLOUDINARY_CLOUD_NAME || '',
@@ -59,6 +59,8 @@ const serializeUser = (user: any) => ({
   createdAt: user.createdAt,
   updatedAt: user.updatedAt,
 });
+
+const toOptionalString = (value: string | null | undefined) => value ?? undefined;
 
 const uploadAvatarToCloudinary = async (file: Express.Multer.File) => {
   return new Promise<{ url: string }>((resolve, reject) => {
@@ -120,8 +122,8 @@ export const register = async (req: Request, res: Response) => {
       fullName: user.fullName,
       email: user.email,
       role: user.role,
-      companyName: user.companyName,
-      avatarUrl: user.avatarUrl,
+      companyName: toOptionalString(user.companyName),
+      avatarUrl: toOptionalString(user.avatarUrl),
       status: user.status,
       passwordHash,
     });
@@ -152,13 +154,13 @@ export const login = async (req: Request, res: Response) => {
     const email = data.email.trim().toLowerCase();
     const password = data.password;
 
-    let user = getCachedAuthUser(email);
+    let user: CachedAuthUser | null | undefined = getCachedAuthUser(email);
 
     if (!user) {
-      user = await User.findOne({ email })
+      user = (await User.findOne({ email })
         .select('_id passwordHash role fullName email companyName avatarUrl status')
         .lean()
-        .exec();
+        .exec()) as CachedAuthUser | null;
     }
 
     if (!user) {
@@ -180,8 +182,8 @@ export const login = async (req: Request, res: Response) => {
         fullName: user.fullName,
         email: user.email,
         role: user.role,
-        companyName: user.companyName,
-        avatarUrl: user.avatarUrl,
+        companyName: toOptionalString(user.companyName),
+        avatarUrl: toOptionalString(user.avatarUrl),
         status: user.status,
         passwordHash: user.passwordHash,
       });

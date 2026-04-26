@@ -1,0 +1,52 @@
+{
+  "personalInfo": {
+    "firstName": "Aline",
+    "lastName": "Uwase",
+    "email": "aline.uwase@example.com",
+    "headline": "Junior Data Analyst",
+    "bio": "Entry-level analyst with basic SQL and Excel skills.",
+    "location": "Kigali, Rwanda"
+  },
+  "skills": [
+    {
+      "name": "Excel",
+      "level": "Advanced",
+      "yearsOfExperience": 2
+    },
+    {
+      "name": "SQL",
+      "level": "Beginner",
+      "yearsOfExperience": 1
+    }
+  ],
+  "experience": [
+    {
+      "company": "Internship Rwanda",
+      "role": "Data Analyst Intern",
+      "startDate": "2024-01-01",
+      "endDate": "2024-12-01",
+      "description": "Worked on reports and dashboards.",
+      "technologies": [
+        "Excel"
+      ],
+      "isCurrent": false,
+      "yearsOfExperience": 1
+    }
+  ],
+  "education": [
+    {
+      "institution": "University of Rwanda",
+      "degree": "Bachelor",
+      "fieldOfStudy": "Statistics",
+      "startYear": 2020,
+      "endYear": 2024
+    }
+  ],
+  "certifications": [],
+  "projects": [],
+  "availability": {
+    "status": "available",
+    "type": "full-time",
+    "startDate": "2026-07-01"
+  }
+}

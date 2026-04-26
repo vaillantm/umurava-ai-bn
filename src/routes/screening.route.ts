@@ -7,6 +7,7 @@ import {
   runScreening,
   runBulkScreening,
   getLatestScreening,
+  getLatestScreeningByQuery,
   getScreeningById,
   exportScreening
 } from '../controllers/screening.controller.js';
@@ -168,6 +169,31 @@ router.post('/run', protect, validate(screeningRunSchema), runScreening);
  *                   screeningId: 66f1a1b2c3d4e5f6a7b8c9f9
  */
 router.post('/bulk-run', protect, upload.array('files', 50), runBulkScreening);
+
+/**
+ * @swagger
+ * /api/screenings/latest:
+ *   get:
+ *     summary: Get the most recent screening for a job using query param
+ *     tags: [Screenings]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: query
+ *         name: jobId
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: Job ID
+ *     responses:
+ *       200:
+ *         description: Latest screening result
+ *       400:
+ *         description: jobId is required
+ *       404:
+ *         description: No screening found for this job
+ */
+router.get('/latest', protect, getLatestScreeningByQuery);
 
 /**
  * @swagger

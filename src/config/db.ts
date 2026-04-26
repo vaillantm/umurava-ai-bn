@@ -5,14 +5,14 @@ dotenv.config();
 
 const connectDB = async () => {
   try {
-    const options = {
+    const options: mongoose.ConnectOptions = {
       serverSelectionTimeoutMS: 30000,
       connectTimeoutMS: 30000,
       socketTimeoutMS: 30000,
       family: 4,
       maxPoolSize: 10,
       retryWrites: true,
-      w: 'majority',
+      w: 'majority' as const,
       directConnection: false,
       ssl: true,
     };
